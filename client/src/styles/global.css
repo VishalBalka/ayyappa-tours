@@ -1,0 +1,128 @@
+/* ═══════════════════════════════════════════════
+   AYYAPPA TOURS — Global Design System
+   Font: Cormorant Garamond (display) + DM Sans (body)
+   Aesthetic: Luxury Forest — dark, organic, cinematic
+═══════════════════════════════════════════════ */
+
+:root {
+  /* Forest Palette */
+  --ink:       #060d06;
+  --deep:      #0b160b;
+  --bark:      #111e11;
+  --moss:      #1a2e1a;
+  --fern:      #243824;
+  --canopy:    #2e4e2e;
+  --leaf:      #3d6b3d;
+  --sage:      #5c9b5c;
+  --mint:      #7ec87e;
+  --dew:       #aedcae;
+  --mist:      #d6efd6;
+
+  /* Gold accents */
+  --gold:      #c8a84b;
+  --gold-lt:   #e8cc7a;
+
+  /* Text */
+  --tx-1:      #edf5ed;
+  --tx-2:      #9db89d;
+  --tx-3:      #5a755a;
+
+  /* Surfaces */
+  --surf-1:    rgba(255,255,255,0.03);
+  --surf-2:    rgba(255,255,255,0.06);
+  --surf-3:    rgba(255,255,255,0.10);
+
+  /* Borders */
+  --bdr:       rgba(94,160,94,0.12);
+  --bdr-lt:    rgba(94,160,94,0.25);
+
+  /* Radius */
+  --r-sm:  8px;
+  --r-md:  14px;
+  --r-lg:  22px;
+  --r-xl:  32px;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 12px rgba(0,0,0,0.3);
+  --shadow-md: 0 8px 32px rgba(0,0,0,0.45);
+  --shadow-lg: 0 20px 60px rgba(0,0,0,0.6);
+  --glow:      0 0 40px rgba(92,155,92,0.2);
+
+  /* Transitions */
+  --ease:      cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in:   cubic-bezier(0.4, 0, 1, 1);
+  --t-fast:    0.15s;
+  --t-mid:     0.3s;
+  --t-slow:    0.5s;
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  font-family: "DM Sans", sans-serif;
+  background: var(--ink);
+  color: var(--tx-1);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+img  { display: block; max-width: 100%; }
+a    { color: inherit; text-decoration: none; }
+button { cursor: pointer; font-family: inherit; border: none; background: none; }
+ul, ol { list-style: none; }
+input, select, textarea { font-family: inherit; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--deep); }
+::-webkit-scrollbar-thumb { background: var(--canopy); border-radius: 4px; }
+
+/* ── Typography ── */
+h1, h2, h3, h4 {
+  font-family: "Cormorant Garamond", serif;
+  line-height: 1.15;
+  font-weight: 400;
+}
+
+/* ── Utilities ── */
+.container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); border: 0;
+}
+
+/* ── Keyframes ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}

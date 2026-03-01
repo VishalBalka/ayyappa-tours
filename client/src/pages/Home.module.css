@@ -1,0 +1,87 @@
+.page { min-height: 100vh; }
+
+/* Stats */
+.stats { background: var(--bark); border-bottom: 1px solid var(--bdr); }
+.statsGrid {
+  display: flex; justify-content: space-around; flex-wrap: wrap;
+  padding: 2rem 1.5rem; gap: 1rem;
+}
+.statItem { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; }
+.statItem strong { font-family: "Cormorant Garamond", serif; font-size: 1.8rem; font-weight: 400; color: var(--mint); }
+.statItem span   { font-size: 0.75rem; color: var(--tx-3); letter-spacing: 0.04em; }
+
+/* Section */
+.secHead { text-align: center; margin-bottom: 2.5rem; }
+.secTag  { display: inline-block; font-size: 0.68rem; letter-spacing: 0.22em; color: var(--sage); margin-bottom: 0.8rem; font-weight: 500; text-transform: uppercase; }
+.secH    { font-family: "Cormorant Garamond", serif; font-size: clamp(1.9rem, 3.5vw, 2.8rem); font-weight: 400; color: var(--tx-1); margin-bottom: 0.75rem; }
+.secP    { color: var(--tx-2); font-size: 0.92rem; font-weight: 300; }
+
+/* Trips */
+.trips { padding: 5rem 0; }
+.filters { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2.5rem; }
+.filter {
+  background: var(--bark); border: 1px solid var(--bdr); border-radius: 50px;
+  padding: 0.45rem 1.3rem; font-size: 0.8rem; color: var(--tx-2);
+  transition: all var(--t-fast);
+}
+.filter:hover { border-color: var(--sage); color: var(--tx-1); }
+.filterOn { background: var(--leaf); border-color: var(--sage); color: #fff; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+.skeleton {
+  height: 390px; background: var(--bark); border-radius: var(--r-lg);
+  background: linear-gradient(90deg, var(--bark) 25%, var(--moss) 50%, var(--bark) 75%);
+  background-size: 800px 100%; animation: shimmer 1.6s infinite;
+}
+.empty { text-align: center; color: var(--tx-3); padding: 4rem; font-size: 0.95rem; }
+
+/* Why */
+.why { padding: 5rem 0; background: var(--deep); }
+.whyGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.25rem; }
+.whyCard {
+  background: var(--bark); border: 1px solid var(--bdr); border-radius: var(--r-lg);
+  padding: 2rem 1.5rem; transition: border-color var(--t-mid), transform var(--t-mid);
+}
+.whyCard:hover { border-color: var(--bdr-lt); transform: translateY(-5px); }
+.whyCard > span { font-size: 2rem; display: block; margin-bottom: 1rem; }
+.whyCard h3 { font-family: "Cormorant Garamond", serif; font-size: 1.15rem; font-weight: 400; color: var(--tx-1); margin-bottom: 0.5rem; }
+.whyCard p  { font-size: 0.83rem; color: var(--tx-2); line-height: 1.6; }
+
+/* Contact */
+.contact { padding: 5rem 0; }
+.contactGrid { display: flex; gap: 1.25rem; flex-wrap: wrap; justify-content: center; margin-top: 0.5rem; }
+.contactCard {
+  background: var(--bark); border: 1px solid var(--bdr); border-radius: var(--r-lg);
+  padding: 2rem 2.25rem; display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+  min-width: 190px; transition: border-color var(--t-mid);
+}
+.contactCard:hover { border-color: var(--bdr-lt); }
+.contactCard > span:first-child { font-size: 1.8rem; }
+.contactCard strong { font-size: 0.8rem; color: var(--tx-3); }
+.contactCard > span:last-child  { font-size: 0.92rem; color: var(--tx-1); }
+
+/* Footer */
+.footer { background: var(--ink); border-top: 1px solid var(--bdr); padding: 2rem 0; }
+.footerInner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+.footerBrand { font-family: "Cormorant Garamond", serif; font-size: 1.15rem; color: var(--tx-1); display: block; margin-bottom: 0.2rem; }
+.footerBrand em { color: var(--sage); font-style: italic; }
+.footer > div > div > p,
+.footer > div > p { font-size: 0.75rem; color: var(--tx-3); }
+
+/* WhatsApp float */
+.wa {
+  position: fixed; bottom: 2rem; right: 2rem; z-index: 999;
+  width: 56px; height: 56px; border-radius: 50%;
+  background: #25d366; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(37,211,102,0.4);
+}
+.waPulse {
+  position: absolute; width: 56px; height: 56px; border-radius: 50%;
+  background: rgba(37,211,102,0.4);
+  animation: wap 2s infinite;
+}
+@keyframes wap {
+  0%   { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(2.2); opacity: 0; }
+}

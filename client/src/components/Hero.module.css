@@ -1,0 +1,78 @@
+.hero {
+  position: relative; height: 100vh; min-height: 620px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.bg { position: absolute; inset: 0; }
+.bg img { width: 100%; height: 100%; object-fit: cover; }
+.overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    160deg,
+    rgba(6,13,6,0.25) 0%,
+    rgba(6,13,6,0.55) 55%,
+    rgba(6,13,6,0.88) 100%
+  );
+}
+.content {
+  position: relative; z-index: 2;
+  text-align: center; padding: 0 1.5rem; max-width: 800px;
+}
+.tag {
+  display: inline-block;
+  background: rgba(92,155,92,0.18); border: 1px solid rgba(92,155,92,0.35);
+  color: var(--mint); font-size: 0.72rem; letter-spacing: 0.2em;
+  font-weight: 500; padding: 0.35rem 1.1rem; border-radius: 50px;
+  text-transform: uppercase; margin-bottom: 1.25rem;
+}
+.heading {
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(3rem, 7vw, 6rem);
+  font-weight: 300; color: #fff; letter-spacing: -0.01em;
+  text-shadow: 0 4px 30px rgba(0,0,0,0.4);
+  margin-bottom: 1rem;
+}
+.sub {
+  font-size: clamp(1rem, 2vw, 1.2rem); font-weight: 300;
+  color: rgba(237,245,237,0.75); letter-spacing: 0.02em;
+  margin-bottom: 2.5rem;
+}
+.actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+.btnPrimary {
+  padding: 0.85rem 2.25rem; border-radius: 50px;
+  background: linear-gradient(135deg, var(--leaf), var(--sage));
+  color: #fff; font-size: 0.9rem; font-weight: 500; letter-spacing: 0.04em;
+  box-shadow: 0 4px 24px rgba(92,155,92,0.35);
+  transition: transform var(--t-fast), box-shadow var(--t-fast);
+}
+.btnPrimary:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(92,155,92,0.5); }
+.btnGhost {
+  padding: 0.85rem 2rem; border-radius: 50px;
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.25);
+  backdrop-filter: blur(10px); color: #fff;
+  font-size: 0.9rem; font-weight: 400;
+  display: flex; align-items: center; gap: 0.5rem;
+  transition: background var(--t-fast);
+}
+.btnGhost:hover { background: rgba(255,255,255,0.15); }
+
+.dots {
+  position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 0.5rem; z-index: 2;
+}
+.dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  transition: background var(--t-mid), transform var(--t-mid), width var(--t-mid);
+}
+.dotOn { background: var(--sage); transform: scale(1.4); }
+
+.scroll {
+  position: absolute; bottom: 2.5rem; right: 2.5rem; z-index: 2;
+  color: rgba(255,255,255,0.4);
+}
+
+@media (max-width: 600px) {
+  .heading { font-size: clamp(2.5rem, 10vw, 3.5rem); }
+  .scroll  { display: none; }
+}
