@@ -109,11 +109,9 @@ export default function Navbar() {
                     </motion.a>
                   ))}
                 </nav>
-                <div className={s.drawerFoot}>
-                  <Link to="/admin/login" className={s.drawerAdmin} onClick={() => setOpen(false)}>
-                    Admin Panel
-                  </Link>
-                </div>
+                
+                  
+                
               </div>
             </motion.div>
           </>

@@ -67,7 +67,7 @@ export default function Hero({ onExplore }) {
             Explore Experiences
           </button>
           <a
-            href={`https://wa.me/${import.meta.env.VITE_WA || "919999999999"}`}
+            href={`https://wa.me/${import.meta.env.VITE_WA || "919573680120"}`}
             target="_blank" rel="noopener noreferrer"
             className={s.btnGhost}
           >

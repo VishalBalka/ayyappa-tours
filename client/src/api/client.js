@@ -1,72 +1,75 @@
-// Secure API client
-// - Uses fetch with credentials: "include" so HttpOnly cookies are sent automatically
-// - Token is NEVER stored in JS, localStorage, or sessionStorage
-// - All errors are normalized
+import axios from "axios";
 
-const BASE = "/api";
+const BASE = import.meta.env.VITE_API_URL || "/api";
 
-class ApiError extends Error {
-  constructor(message, status) {
-    super(message);
-    this.status = status;
-  }
-}
+// Ensure cookies are sent with every request for HttpOnly auth
+axios.defaults.withCredentials = true;
 
-async function request(path, options = {}) {
-  const res = await fetch(`${BASE}${path}`, {
-    ...options,
-    credentials: "include", // sends HttpOnly cookie automatically
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
-  });
-
-  // Parse response
-  let data;
-  const contentType = res.headers.get("content-type");
-  if (contentType?.includes("application/json")) {
-    data = await res.json();
-  } else {
-    data = { message: await res.text() };
-  }
-
-  if (!res.ok) {
-    throw new ApiError(
-      data?.error || data?.message || `Request failed (${res.status})`,
-      res.status
-    );
-  }
-
-  return data;
-}
-
-// ── Public API ────────────────────────────────────────────────────────────
-export const api = {
-  // Trips
-  getTrips:    ()           => request("/trips"),
-  getTrip:     (id)         => request(`/trips/${id}`),
-
-  // Bookings
-  createBooking: (payload)  => request("/bookings", { method: "POST", body: JSON.stringify(payload) }),
-
-  // Admin auth
-  login:   (creds)          => request("/admin/login",  { method: "POST", body: JSON.stringify(creds) }),
-  logout:  ()               => request("/admin/logout", { method: "POST" }),
-
-  // Admin — all protected by HttpOnly cookie
-  getStats:     ()          => request("/admin/stats"),
-  getBookings:  ()          => request("/admin/bookings"),
-  getLogs:      ()          => request("/admin/logs"),
-
-  updateBookingStatus: (id, status) =>
-    request(`/admin/bookings/${id}/status`, { method: "PATCH", body: JSON.stringify({ status }) }),
-
-  getAdminTrips: ()         => request("/admin/trips"),
-  createTrip:    (data)     => request("/admin/trips",      { method: "POST",   body: JSON.stringify(data) }),
-  updateTrip:    (id, data) => request(`/admin/trips/${id}`,{ method: "PUT",    body: JSON.stringify(data) }),
-  deleteTrip:    (id)       => request(`/admin/trips/${id}`,{ method: "DELETE" }),
-  toggleTrip:    (id)       => request(`/admin/trips/${id}/toggle`, { method: "PATCH" }),
+// Helper to get auth headers
+const authHeaders = () => {
+  return {};
 };
 
-export { ApiError };
+// ── Public ──────────────────────────────────────────────
+export const api = {
+  getTrips: () =>
+    axios.get(`${BASE}/trips`).then((r) => r.data),
+
+  getTripById: (id) =>
+    axios.get(`${BASE}/trips/${id}`).then((r) => r.data),
+
+  createBooking: (data) =>
+    axios.post(`${BASE}/bookings`, data).then((r) => r.data),
+
+  // ── Admin ─────────────────────────────────────────────
+  adminLogin: (data) =>
+    axios.post(`${BASE}/admin/login`, data).then((r) => r.data),
+
+  getStats: () =>
+    axios.get(`${BASE}/admin/stats`, { headers: authHeaders() }).then((r) => r.data),
+
+  getBookings: () =>
+    axios.get(`${BASE}/admin/bookings`, { headers: authHeaders() }).then((r) => r.data),
+
+  updateBookingStatus: (id, status) =>
+    axios.patch(`${BASE}/admin/bookings/${id}/status`, { status }, { headers: authHeaders() }).then((r) => r.data),
+
+  getAdminTrips: () =>
+    axios.get(`${BASE}/admin/trips`, { headers: authHeaders() }).then((r) => r.data),
+
+  createTrip: (data) =>
+    axios.post(`${BASE}/admin/trips`, data, { headers: authHeaders() }).then((r) => r.data),
+
+  updateTrip: (id, data) =>
+    axios.put(`${BASE}/admin/trips/${id}`, data, { headers: authHeaders() }).then((r) => r.data),
+
+  toggleTrip: (id) =>
+    axios.patch(`${BASE}/admin/trips/${id}/toggle`, {}, { headers: authHeaders() }).then((r) => r.data),
+
+  deleteTrip: (id) =>
+    axios.delete(`${BASE}/admin/trips/${id}`, { headers: authHeaders() }).then((r) => r.data),
+
+  getLogs: () =>
+    axios.get(`${BASE}/admin/logs`, { headers: authHeaders() }).then((r) => r.data),
+
+  // ── Upload ──────────────────────────────────────────────
+  uploadImage: (file) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    return axios.post(`${BASE}/admin/upload`, formData, {
+      headers: { ...authHeaders(), 'Content-Type': 'multipart/form-data' }
+    }).then((r) => r.data);
+  },
+
+  // ── Cabs ────────────────────────────────────────────────
+  getAdminCabs: () =>
+    axios.get(`${BASE}/cabs`, { headers: authHeaders() }).then((r) => r.data),
+  createCab: (data) =>
+    axios.post(`${BASE}/cabs`, data, { headers: authHeaders() }).then((r) => r.data),
+  updateCab: (id, data) =>
+    axios.put(`${BASE}/cabs/${id}`, data, { headers: authHeaders() }).then((r) => r.data),
+  toggleCab: (id) =>
+    axios.patch(`${BASE}/cabs/${id}/toggle`, {}, { headers: authHeaders() }).then((r) => r.data),
+  deleteCab: (id) =>
+    axios.delete(`${BASE}/cabs/${id}`, { headers: authHeaders() }).then((r) => r.data),
+};

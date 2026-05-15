@@ -1,0 +1,20 @@
+cd "D:\ayyappa tours"
+
+Set-Content -Path ".gitignore" -Encoding UTF8 -Value @'
+# Dependencies
+node_modules/
+server/node_modules/
+client/node_modules/
+
+# Environment files
+.env
+server/.env
+client/.env
+
+# Build output
+client/dist/
+
+# OS files
+.DS_Store
+Thumbs.db
+'@

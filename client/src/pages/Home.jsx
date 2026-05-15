@@ -21,7 +21,7 @@ const SAMPLE = [
 
 const WhatsAppBtn = () => (
   <motion.a
-    href={`https://wa.me/${import.meta.env.VITE_WA || "919999999999"}`}
+    href={`https://wa.me/${import.meta.env.VITE_WA || "919573680120"}`}
     target="_blank" rel="noopener noreferrer"
     className={s.wa}
     initial={{ scale: 0, opacity: 0 }}
@@ -156,12 +156,23 @@ export default function Home() {
             <h2 className={s.secH}>Plan Your Journey</h2>
           </motion.div>
           <div className={s.contactGrid}>
-            {[["📞","Phone","+91 99999 99999"],["✉️","Email","hello@ayyappatours.in"],["📍","Location","Aluva, Kerala, India"]].map(([icon, label, val]) => (
-              <div key={label} className={s.contactCard}>
+            {[
+              ["📞", "Phone", "+91 9573680120", "tel:+919573680120"],
+              ["✉️", "Email", "vishalbalka@gmail.com", "mailto:vishalbalka@gmail.com"],
+              ["📍", "Location", "Aluva, Kerala, India", "https://maps.google.com/?q=Aluva,+Kerala,+India"]
+            ].map(([icon, label, val, link]) => (
+              <a 
+                key={label} 
+                href={link} 
+                target={label === "Location" ? "_blank" : undefined} 
+                rel={label === "Location" ? "noopener noreferrer" : undefined} 
+                className={s.contactCard}
+                style={{ textDecoration: 'none', color: 'inherit' }}
+              >
                 <span>{icon}</span>
                 <strong>{label}</strong>
                 <span>{val}</span>
-              </div>
+              </a>
             ))}
           </div>
         </div>

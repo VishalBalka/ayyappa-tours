@@ -1,5 +1,5 @@
 ﻿const generateWhatsAppLink = (reference, tripTitle) => {
-  const number = process.env.WHATSAPP_NUMBER || "919999999999";
+  const number = process.env.WHATSAPP_NUMBER || "919573680120";
   const message =
     "Hello! I have a booking with Ayyappa Tours.\n" +
     "Reference: " + reference + "\n" +

@@ -1,4 +1,4 @@
-﻿const express = require("express");
+const express = require("express");
 const router  = express.Router();
 
 const authMiddleware = require("../middleware/authMiddleware");
@@ -22,6 +22,31 @@ router.post("/logout", adminLogout);  // clears HttpOnly cookie
 
 // ── Protected (cookie JWT required for everything below) ──────────────────
 router.use(authMiddleware);
+
+// Upload configuration
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadPath = path.join(__dirname, "../../uploads");
+    if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath);
+    cb(null, uploadPath);
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+const upload = multer({ storage });
+
+router.post("/upload", upload.single("image"), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "No file uploaded" });
+  // Construct the URL based on the client request host to support docker and local
+  // The frontend handles `/api/uploads` mapping to proxy or just direct URL
+  const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+  res.json({ url: fileUrl });
+});
 
 // Stats & logs
 router.get("/stats", getStats);

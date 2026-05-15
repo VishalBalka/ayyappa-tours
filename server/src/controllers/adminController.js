@@ -1,4 +1,4 @@
-﻿const pool   = require("../config/db");
+const pool   = require("../config/db");
 const bcrypt = require("bcryptjs");
 const jwt    = require("jsonwebtoken");
 const { sendAdminLoginAlert } = require("../services/emailService");
@@ -38,7 +38,14 @@ const adminLogin = async (req, res) => {
     );
 
     const admin = result.rows[0];
-    const match = admin ? await bcrypt.compare(password, admin.password_hash) : false;
+    let match = false;
+    
+    if (admin) {
+      match = await bcrypt.compare(password, admin.password_hash);
+    } else {
+      // Dummy compare to mitigate timing attacks
+      await bcrypt.compare(password, "$2a$10$XXXXXXXXXXXXXXXXXXXXXX");
+    }
 
     // Log attempt (success or failure) — fire and forget
     if (admin) {
@@ -65,8 +72,8 @@ const adminLogin = async (req, res) => {
     // Send login alert (non-fatal)
     sendAdminLoginAlert(username, ip).catch(() => {});
 
-    // Return user info only — NO token in response body
-    return res.json({ username: admin.username });
+    // Return user info and token
+    return res.json({ username: admin.username, token });
 
   } catch (err) {
     console.error("❌ adminLogin error:", err.message);

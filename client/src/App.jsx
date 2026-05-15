@@ -1,37 +1,43 @@
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { useEffect } from "react";
-import { useAuthStore } from "./store/authStore";
-import Home         from "./pages/Home";
-import AdminLogin   from "./pages/AdminLogin";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Home from "./pages/Home";
+import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import { getToken } from "./api/axios"; // single source of truth
 
-// Verifies session cookie on protected routes
 function ProtectedRoute({ children }) {
-  const { user, checked, check } = useAuthStore();
-  const location = useLocation();
+  // If no token in localStorage, redirect to login
+  return getToken() ? children : <Navigate to="/admin/login" replace />;
+}
 
-  useEffect(() => { if (!checked) check(); }, [checked]);
-
-  if (!checked) return (
-    <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:"100vh", background:"#060d06" }}>
-      <div style={{ width:32, height:32, border:"2px solid rgba(92,155,92,0.2)", borderTopColor:"#5c9b5c", borderRadius:"50%", animation:"spin 0.8s linear infinite" }} />
-    </div>
+function PublicLayout({ children }) {
+  return (
+    <>
+      <Navbar />
+      {children}
+    </>
   );
-
-  return user
-    ? children
-    : <Navigate to="/admin/login" state={{ from: location }} replace />;
 }
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/"               element={<Home />} />
-        <Route path="/admin/login"    element={<AdminLogin />} />
-        <Route path="/admin/dashboard" element={
-          <ProtectedRoute><AdminDashboard /></ProtectedRoute>
-        } />
+        {/* Public */}
+        <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
+
+        {/* Admin */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
