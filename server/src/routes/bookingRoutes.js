@@ -1,8 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { body, validationResult } = require("express-validator");
-const { createBooking } = require("../controllers/bookingController");
-const { bookingLimiter } = require("../middleware/rateLimiter");
+const { createBooking, getAllBookings, updateBookingStatus } = require("../controllers/bookingController");
 
 const validateBooking = [
   body("trip_id").isInt().withMessage("Valid trip ID is required"),
@@ -20,6 +19,8 @@ const validateBooking = [
   }
 ];
 
-router.post("/", bookingLimiter, validateBooking, createBooking);
+router.post("/", validateBooking, createBooking);
+router.get("/", getAllBookings);
+router.patch("/:id/status", updateBookingStatus);
 
 module.exports = router;
