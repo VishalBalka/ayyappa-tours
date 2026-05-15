@@ -2,14 +2,7 @@
   "name": "ayyappa-tours-root",
   "version": "1.0.0",
   "scripts": {
-    "build": "cd client && npm install && npm run build",
+    "build": "cd server && npm install && cd ../client && npm install && npm run build",
     "start": "node server/server.js"
-  },
-  "dependencies": {
-    "express": "^4.19.2",
-    "dotenv": "^16.4.5",
-    "pg": "^8.11.5",
-    "cors": "^2.8.5",
-    "helmet": "^7.0.0"
   }
 }
