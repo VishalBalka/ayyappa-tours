@@ -2,18 +2,23 @@
 const { sendBookingReceived, sendAdminNewBooking, sendBookingConfirmed } = require("../services/emailService");
 const { sendWhatsAppToAdmin, sendWhatsAppToCustomer } = require("../services/whatsappService");
 
-// ── Reference generator (crypto-safe) ────────────────────────────────────
+// ── Reference generator ───────────────────────────────────────────────────
 const generateReference = () => {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I to avoid confusion
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let ref = "AYT-";
   for (let i = 0; i < 6; i++) ref += chars[Math.floor(Math.random() * chars.length)];
   return ref;
 };
 
-// ── Safe notification helper — never crashes the booking ─────────────────
-const safeSend = async (fn, ...args) => {
-  try { await fn(...args); }
-  catch (err) { console.error("⚠️  Notification failed (non-fatal):", err.message); }
+// ── Safe notification — never crashes the booking ─────────────────────────
+const safeSend = (fn, ...args) => {
+  try {
+    Promise.resolve(fn(...args)).catch((err) =>
+      console.error("⚠️  Notification failed (non-fatal):", err.message)
+    );
+  } catch (err) {
+    console.error("⚠️  Notification failed (non-fatal):", err.message);
+  }
 };
 
 // ── createBooking ─────────────────────────────────────────────────────────
@@ -24,7 +29,7 @@ const createBooking = async (req, res) => {
       place, travel_date, persons, special_requests,
     } = req.body;
 
-    // Extra server-side validation (defense in depth)
+    // Validation
     if (!customer_name?.trim() || !customer_email?.trim() || !travel_date || !persons) {
       return res.status(400).json({ error: "Name, email, date and number of persons are required." });
     }
@@ -38,8 +43,7 @@ const createBooking = async (req, res) => {
       return res.status(400).json({ error: "Number of persons must be between 1 and 100." });
     }
 
-    // Ensure travel date is today or future
-    const today = new Date(); today.setHours(0,0,0,0);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
     if (new Date(travel_date) < today) {
       return res.status(400).json({ error: "Travel date must be today or in the future." });
     }
@@ -66,17 +70,18 @@ const createBooking = async (req, res) => {
 
     const booking = result.rows[0];
 
-    // ── Send all notifications (non-fatal) ────────────────────────────────
-    await safeSend(sendBookingReceived,    booking); // email → customer
-    await safeSend(sendAdminNewBooking,    booking); // email → admin
-    await safeSend(sendWhatsAppToAdmin,    booking); // WhatsApp → admin
-    await safeSend(sendWhatsAppToCustomer, booking); // WhatsApp → customer (if phone given)
-
-    return res.status(201).json({
+    // ── Respond immediately — don't wait for notifications ────────────────
+    res.status(201).json({
       message:   "Booking received successfully.",
       reference: booking.reference,
       booking,
     });
+
+    // ── Fire notifications in background after response ───────────────────
+    safeSend(sendBookingReceived,    booking); // email → customer
+    safeSend(sendAdminNewBooking,    booking); // email → admin
+    safeSend(sendWhatsAppToAdmin,    booking); // WhatsApp → admin
+    safeSend(sendWhatsAppToCustomer, booking); // WhatsApp → customer
 
   } catch (err) {
     console.error("❌ createBooking error:", err.message);
@@ -103,7 +108,7 @@ const updateBookingStatus = async (req, res) => {
     const { id }     = req.params;
     const { status } = req.body;
 
-    if (!["pending","confirmed","cancelled"].includes(status)) {
+    if (!["pending", "confirmed", "cancelled"].includes(status)) {
       return res.status(400).json({ error: "Invalid status value." });
     }
 
@@ -117,13 +122,15 @@ const updateBookingStatus = async (req, res) => {
 
     const booking = result.rows[0];
 
-    // Send confirmation email + WhatsApp when admin confirms
+    // ── Respond immediately ───────────────────────────────────────────────
+    res.json({ message: "Status updated.", booking });
+
+    // ── Fire confirmation notifications in background ─────────────────────
     if (status === "confirmed") {
-      await safeSend(sendBookingConfirmed,    booking);
-      await safeSend(sendWhatsAppToCustomer,  booking);
+      safeSend(sendBookingConfirmed,   booking); // email → customer
+      safeSend(sendWhatsAppToCustomer, booking); // WhatsApp → customer
     }
 
-    res.json({ message: "Status updated.", booking });
   } catch (err) {
     console.error("❌ updateBookingStatus error:", err.message);
     res.status(500).json({ error: "Internal server error" });
