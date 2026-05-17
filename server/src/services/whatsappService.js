@@ -2,11 +2,6 @@
 
 const BASE = "https://graph.facebook.com/v19.0";
 
-/**
- * Send WhatsApp message via Meta Cloud API
- * @param {string} to   - phone with country code, no +  e.g. "919573680120"
- * @param {string} body - message text (plain or with *bold*)
- */
 async function sendWhatsApp(to, body) {
   if (!process.env.WHATSAPP_TOKEN || !process.env.WHATSAPP_PHONE_ID) {
     console.warn("⚠️  WhatsApp not configured — skipping");
@@ -31,7 +26,6 @@ async function sendWhatsApp(to, body) {
         },
       }
     );
-
     console.log(`✅ WhatsApp sent to ${phone} — ID: ${res.data.messages?.[0]?.id}`);
     return res.data;
   } catch (err) {
@@ -41,4 +35,70 @@ async function sendWhatsApp(to, body) {
   }
 }
 
-module.exports = { sendWhatsApp };
+// ── Called when a new booking is created ─────────────────────────────────
+async function sendWhatsAppToAdmin(booking) {
+  const adminPhone = process.env.ADMIN_PHONE;
+  if (!adminPhone) {
+    console.warn("⚠️  ADMIN_PHONE not set — skipping admin WhatsApp");
+    return null;
+  }
+
+  const msg =
+`🔔 *New Booking — Ayyappa Tours*
+
+*Reference:* ${booking.reference}
+*Name:* ${booking.customer_name}
+*Phone:* ${booking.customer_phone || "N/A"}
+*Email:* ${booking.customer_email}
+*Destination:* ${booking.place || "Not specified"}
+*Date:* ${booking.travel_date}
+*Persons:* ${booking.persons}
+${booking.special_requests ? `*Notes:* ${booking.special_requests}` : ""}
+
+Log in to admin panel to confirm.`;
+
+  return sendWhatsApp(adminPhone, msg);
+}
+
+// ── Called when booking is created OR confirmed ───────────────────────────
+async function sendWhatsAppToCustomer(booking) {
+  if (!booking.customer_phone) {
+    console.warn("⚠️  No customer phone — skipping customer WhatsApp");
+    return null;
+  }
+
+  const isConfirmed = booking.status === "confirmed";
+
+  const msg = isConfirmed
+    ? `✅ *Booking Confirmed — Ayyappa Tours*
+
+Hello ${booking.customer_name}!
+
+Your trip has been *confirmed* 🎉
+
+*Reference:* ${booking.reference}
+*Destination:* ${booking.place || "Not specified"}
+*Travel Date:* ${booking.travel_date}
+*Persons:* ${booking.persons}
+
+Our team will contact you shortly with full details.
+Questions? WhatsApp us: wa.me/919573680120`
+
+    : `🌿 *Ayyappa Tours — Booking Received*
+
+Hello ${booking.customer_name}!
+
+Thank you for choosing Ayyappa Tours. We've received your inquiry.
+
+*Reference:* ${booking.reference}
+*Destination:* ${booking.place || "Not specified"}
+*Travel Date:* ${booking.travel_date}
+*Persons:* ${booking.persons}
+
+Our team will confirm within 24 hours.
+Questions? WhatsApp us: wa.me/919573680120`;
+
+  return sendWhatsApp(booking.customer_phone, msg);
+}
+
+module.exports = { sendWhatsApp, sendWhatsAppToAdmin, sendWhatsAppToCustomer };
