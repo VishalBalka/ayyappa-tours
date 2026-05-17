@@ -1,17 +1,16 @@
 .card {
-  background: var(--bark);
-  border: 1px solid var(--bdr);
-  border-radius: var(--r-lg);
+  background: #ffffff;
+  border: 1.5px solid #d4e8d0;
+  border-radius: 18px;
   overflow: hidden;
   display: flex; flex-direction: column;
-  transition: transform var(--t-mid) var(--ease),
-              box-shadow var(--t-mid),
-              border-color var(--t-mid);
+  transition: transform 0.3s ease, box-shadow 0.3s, border-color 0.3s;
+  box-shadow: 0 2px 10px rgba(45,106,79,0.07);
 }
 .card:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--bdr-lt);
+  transform: translateY(-6px);
+  box-shadow: 0 14px 36px rgba(45,106,79,0.13);
+  border-color: #52b788;
 }
 
 .imgWrap {
@@ -19,51 +18,52 @@
 }
 .imgWrap img {
   width: 100%; height: 100%; object-fit: cover;
-  transition: transform var(--t-slow) var(--ease);
+  transition: transform 0.5s ease;
 }
-.card:hover .imgWrap img { transform: scale(1.07); }
+.card:hover .imgWrap img { transform: scale(1.05); }
 .imgOverlay {
   position: absolute; inset: 0;
-  background: linear-gradient(to top, rgba(6,13,6,0.5) 0%, transparent 60%);
+  background: linear-gradient(to top, rgba(26,58,26,0.4) 0%, transparent 55%);
 }
 
 .badge {
   position: absolute; top: 0.85rem; left: 0.85rem; z-index: 1;
-  background: rgba(6,13,6,0.75); backdrop-filter: blur(8px);
-  border: 1px solid var(--bdr-lt); border-radius: 50px;
-  padding: 0.25rem 0.75rem; font-size: 0.7rem; font-weight: 500;
-  letter-spacing: 0.04em; text-transform: capitalize; color: var(--mint);
+  background: rgba(255,255,255,0.92); backdrop-filter: blur(8px);
+  border: 1px solid rgba(82,183,136,0.3); border-radius: 50px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.7rem; font-weight: 600;
+  text-transform: capitalize; color: #2d6a4f;
 }
 .dur {
   position: absolute; top: 0.85rem; right: 0.85rem; z-index: 1;
-  background: rgba(200,168,75,0.9); border-radius: 50px;
-  padding: 0.25rem 0.75rem; font-size: 0.7rem; font-weight: 600; color: #1a1000;
+  background: rgba(45,106,79,0.88); border-radius: 50px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.7rem; font-weight: 600; color: #fff;
 }
 
-.body { padding: 1.25rem; display: flex; flex-direction: column; flex: 1; gap: 0.45rem; }
-.loc  { font-size: 0.75rem; color: var(--tx-3); letter-spacing: 0.02em; }
+.body {
+  padding: 1.25rem; display: flex; flex-direction: column; flex: 1; gap: 0.4rem;
+}
+.loc  { font-size: 0.74rem; color: #6b9e6b; }
 .title {
-  font-family: "Cormorant Garamond", serif;
-  font-size: 1.2rem; font-weight: 400; color: var(--tx-1); line-height: 1.3;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.2rem; font-weight: 600; color: #1a3a1a; line-height: 1.3;
 }
 .desc {
-  font-size: 0.83rem; color: var(--tx-2); line-height: 1.55; flex: 1;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  font-size: 0.83rem; color: #5a7a5a; line-height: 1.55; flex: 1;
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden;
 }
 
 .foot {
   display: flex; align-items: center; justify-content: space-between;
-  margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px solid var(--bdr);
+  margin-top: 0.75rem; padding-top: 0.75rem;
+  border-top: 1px solid #e8f5e8;
 }
-.price { display: flex; align-items: baseline; gap: 0.25rem; }
-.priceFrom { font-size: 0.7rem; color: var(--tx-3); }
-.priceVal  { font-size: 1.1rem; font-weight: 600; color: var(--mint); }
-.pricePer  { font-size: 0.7rem; color: var(--tx-3); }
-
-.btn {
-  background: linear-gradient(135deg, var(--leaf), var(--sage));
-  color: #fff; font-size: 0.8rem; font-weight: 500; letter-spacing: 0.04em;
-  padding: 0.5rem 1.15rem; border-radius: 8px;
-  transition: opacity var(--t-fast), transform var(--t-fast);
+.capacity { font-size: 0.74rem; color: #6b9e6b; }
+.inquiryTag {
+  font-size: 0.68rem; font-weight: 600;
+  color: #52b788; background: rgba(82,183,136,0.1);
+  border: 1px solid rgba(82,183,136,0.25);
+  padding: 0.2rem 0.6rem; border-radius: 50px;
 }
-.btn:hover { opacity: 0.88; transform: scale(1.04); }

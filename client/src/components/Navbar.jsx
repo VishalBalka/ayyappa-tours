@@ -55,7 +55,8 @@ export default function Navbar() {
           </ul>
 
           <div className={s.right}>
-            <a href="#trips" className={s.cta}>Book a Trip</a>
+            {/* ✅ Points to #booking section */}
+            <a href="#booking" className={s.cta}>Book a Trip</a>
             <button
               className={`${s.burger} ${open ? s.burgerOpen : ""}`}
               onClick={() => setOpen(o => !o)}
@@ -109,9 +110,18 @@ export default function Navbar() {
                     </motion.a>
                   ))}
                 </nav>
-                
-                  
-                
+
+                {/* Book a Trip button in mobile drawer too */}
+                <motion.a
+                  href="#booking"
+                  className={s.drawerCta}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.35 }}
+                  onClick={() => setOpen(false)}
+                >
+                  Book a Trip ✓
+                </motion.a>
               </div>
             </motion.div>
           </>

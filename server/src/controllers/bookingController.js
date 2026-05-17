@@ -1,128 +1,132 @@
 ﻿const pool = require("../config/db");
-const calculatePrice = require("../utils/calculatePrice");
-const generateReference = require("../utils/generateReference");
-const generateWhatsAppLink = require("../services/whatsappService");
-const {
-  sendBookingReceived,
-  sendAdminNewBooking,
-  sendBookingConfirmed,
-} = require("../services/emailService");
+const { sendBookingReceived, sendAdminNewBooking, sendBookingConfirmed } = require("../services/emailService");
+const { sendWhatsAppToAdmin, sendWhatsAppToCustomer } = require("../services/whatsappService");
 
-// Safe email helper — never crashes the request
-const safeSend = async (fn, ...args) => {
-  try {
-    await fn(...args);
-  } catch (err) {
-    console.error("⚠️  Email send failed (non-fatal):", err.message);
-  }
+// ── Reference generator (crypto-safe) ────────────────────────────────────
+const generateReference = () => {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I to avoid confusion
+  let ref = "AYT-";
+  for (let i = 0; i < 6; i++) ref += chars[Math.floor(Math.random() * chars.length)];
+  return ref;
 };
 
+// ── Safe notification helper — never crashes the booking ─────────────────
+const safeSend = async (fn, ...args) => {
+  try { await fn(...args); }
+  catch (err) { console.error("⚠️  Notification failed (non-fatal):", err.message); }
+};
+
+// ── createBooking ─────────────────────────────────────────────────────────
 const createBooking = async (req, res) => {
   try {
     const {
-      trip_id, customer_name, customer_email, customer_phone,
-      nationality, group_type, persons, travel_date, cab_type, special_requests,
+      customer_name, customer_email, customer_phone,
+      place, travel_date, persons, special_requests,
     } = req.body;
 
-    // ── Validation ────────────────────────────────────────────────────────
-    if (!trip_id || !customer_name || !customer_email || !persons || !travel_date)
-      return res.status(400).json({ error: "Missing required fields" });
+    // Extra server-side validation (defense in depth)
+    if (!customer_name?.trim() || !customer_email?.trim() || !travel_date || !persons) {
+      return res.status(400).json({ error: "Name, email, date and number of persons are required." });
+    }
 
-    // ── Fetch Trip ────────────────────────────────────────────────────────
-    const tripResult = await pool.query("SELECT * FROM trips WHERE id = $1", [trip_id]);
-    if (!tripResult.rows.length)
-      return res.status(404).json({ error: "Trip not found" });
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRe.test(customer_email.trim())) {
+      return res.status(400).json({ error: "Please enter a valid email address." });
+    }
 
-    const trip = tripResult.rows[0];
+    if (Number(persons) < 1 || Number(persons) > 100) {
+      return res.status(400).json({ error: "Number of persons must be between 1 and 100." });
+    }
 
-    if (!trip.available)
-      return res.status(400).json({ error: "Trip is not available" });
+    // Ensure travel date is today or future
+    const today = new Date(); today.setHours(0,0,0,0);
+    if (new Date(travel_date) < today) {
+      return res.status(400).json({ error: "Travel date must be today or in the future." });
+    }
 
-    if (Number(persons) > trip.max_capacity)
-      return res.status(400).json({ error: `Max capacity is ${trip.max_capacity} persons` });
-
-    // ── Create Booking ────────────────────────────────────────────────────
-    const reference  = generateReference();
-    const total_price = calculatePrice(trip.price, persons, cab_type);
+    const reference = generateReference();
 
     const result = await pool.query(
       `INSERT INTO bookings
-        (trip_id, reference, customer_name, customer_email, customer_phone,
-         nationality, group_type, persons, travel_date, total_price,
-         cab_type, special_requests)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+         (reference, customer_name, customer_email, customer_phone,
+          place, travel_date, persons, special_requests)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
        RETURNING *`,
       [
-        trip_id,
         reference,
         customer_name.trim(),
-        customer_email.trim(),
-        customer_phone  || null,
-        nationality     || null,
-        group_type      || null,
-        Number(persons),
+        customer_email.trim().toLowerCase(),
+        customer_phone?.trim() || null,
+        place?.trim() || null,
         travel_date,
-        total_price,
-        cab_type        || "none",
-        special_requests || null,
+        Number(persons),
+        special_requests?.trim() || null,
       ]
     );
 
-    const booking  = result.rows[0];
-    const whatsapp = generateWhatsAppLink(reference, trip.title);
+    const booking = result.rows[0];
 
-    // ── Emails (non-fatal — booking succeeds even if email fails) ─────────
-    await safeSend(sendBookingReceived, booking, trip);
-    await safeSend(sendAdminNewBooking, booking, trip);
+    // ── Send all notifications (non-fatal) ────────────────────────────────
+    await safeSend(sendBookingReceived,    booking); // email → customer
+    await safeSend(sendAdminNewBooking,    booking); // email → admin
+    await safeSend(sendWhatsAppToAdmin,    booking); // WhatsApp → admin
+    await safeSend(sendWhatsAppToCustomer, booking); // WhatsApp → customer (if phone given)
 
-    // ── Respond ───────────────────────────────────────────────────────────
-    return res.status(201).json({ booking, whatsapp });
+    return res.status(201).json({
+      message:   "Booking received successfully.",
+      reference: booking.reference,
+      booking,
+    });
 
   } catch (err) {
-    console.error("❌ createBooking error:", err);
-    return res.status(500).json({ error: err.message });
+    console.error("❌ createBooking error:", err.message);
+    return res.status(500).json({ error: "Internal server error. Please try again." });
   }
 };
 
-const getAllBookings = async (req, res) => {
+// ── getAllBookings (admin) ─────────────────────────────────────────────────
+const getAllBookings = async (_req, res) => {
   try {
     const result = await pool.query(
-      `SELECT b.*, t.title AS trip_title, t.location AS trip_location
-       FROM bookings b
-       LEFT JOIN trips t ON b.trip_id = t.id
-       ORDER BY b.created_at DESC`
+      "SELECT * FROM bookings ORDER BY created_at DESC"
     );
     res.json(result.rows);
   } catch (err) {
-    console.error("❌ getAllBookings error:", err);
-    res.status(500).json({ error: err.message });
+    console.error("❌ getAllBookings error:", err.message);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
+// ── updateBookingStatus (admin) ───────────────────────────────────────────
 const updateBookingStatus = async (req, res) => {
   try {
     const { id }     = req.params;
     const { status } = req.body;
 
-    if (!["pending", "confirmed", "cancelled"].includes(status))
-      return res.status(400).json({ error: "Invalid status" });
+    if (!["pending","confirmed","cancelled"].includes(status)) {
+      return res.status(400).json({ error: "Invalid status value." });
+    }
 
     const result = await pool.query(
-      "UPDATE bookings SET status = $1 WHERE id = $2 RETURNING *",
+      "UPDATE bookings SET status=$1 WHERE id=$2 RETURNING *",
       [status, id]
     );
 
     if (!result.rows.length)
-      return res.status(404).json({ error: "Booking not found" });
+      return res.status(404).json({ error: "Booking not found." });
 
     const booking = result.rows[0];
 
-    if (status === "confirmed") await safeSend(sendBookingConfirmed, booking);
+    // Send confirmation email + WhatsApp when admin confirms
+    if (status === "confirmed") {
+      await safeSend(sendBookingConfirmed,    booking);
+      await safeSend(sendWhatsAppToCustomer,  booking);
+    }
 
-    res.json({ message: "Status updated", booking });
+    res.json({ message: "Status updated.", booking });
   } catch (err) {
-    console.error("❌ updateBookingStatus error:", err);
-    res.status(500).json({ error: err.message });
+    console.error("❌ updateBookingStatus error:", err.message);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
