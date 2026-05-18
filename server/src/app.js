@@ -21,9 +21,32 @@ app.set("trust proxy", 1);
 // ── Security headers ──────────────────────────────────────────────────────
 app.use(helmet({
   crossOriginResourcePolicy: false,
-  contentSecurityPolicy: false,
+  contentSecurityPolicy: false, // we set our own below
 }));
 app.disable("x-powered-by");
+
+// ── CSP + Permissions-Policy ──────────────────────────────────────────────
+app.use((req, res, next) => {
+  res.setHeader(
+    "Content-Security-Policy",
+    [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com",
+      "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com https://*.onrender.com",
+      "connect-src 'self' https://ayyappa-tours.onrender.com",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join("; ")
+  );
+  res.setHeader(
+    "Permissions-Policy",
+    "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
+  );
+  next();
+});
 
 // ── CORS ──────────────────────────────────────────────────────────────────
 const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
@@ -33,7 +56,6 @@ const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow non-browser requests (Postman, curl, server-to-server)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
     callback(new Error(`CORS blocked: ${origin}`));
@@ -49,7 +71,7 @@ const isProd = process.env.NODE_ENV === "production";
 
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: isProd ? 300 : 2000,   // generous in dev so testing doesn't hit 429
+  max: isProd ? 300 : 2000,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests. Please try again later." },
@@ -57,7 +79,7 @@ const globalLimiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: isProd ? 10 : 100,     // strict in prod, loose in dev
+  max: isProd ? 10 : 100,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many login attempts. Please try again in 15 minutes." },
@@ -84,7 +106,6 @@ app.use(mongoSanitize());
 app.use(hpp());
 
 // ── Static uploads ────────────────────────────────────────────────────────
-// In production, uploaded images live in server/uploads/
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 // ── Dev request logger ────────────────────────────────────────────────────
@@ -106,32 +127,26 @@ app.use("/api/bookings", bookingLimiter, bookingRoutes);
 app.use("/api/admin",    authLimiter,    adminRoutes);
 app.use("/api/cabs",     cabRoutes);
 
-// ── Serve React build in production (single URL) ──────────────────────────
+// ── Serve React build in production ──────────────────────────────────────
 if (isProd) {
-  // client/dist is built before deployment
   app.use(express.static(path.join(__dirname, "../client/dist")));
-
-  // React Router fallback — all non-API routes serve index.html
   app.get("*", (_req, res) => {
     res.sendFile(path.join(__dirname, "../client/dist", "index.html"));
   });
 }
 
-// ── 404 (dev only — in prod the wildcard above catches everything) ─────────
+// ── 404 (dev only) ────────────────────────────────────────────────────────
 if (!isProd) {
   app.use((_req, res) => res.status(404).json({ error: "Route not found" }));
 }
 
 // ── Global error handler ──────────────────────────────────────────────────
-// eslint-disable-next-line no-unused-vars
 app.use((err, _req, res, _next) => {
   console.error("Unhandled error:", err.message);
   if (!isProd) console.error(err.stack);
-
   if (err.message?.startsWith("CORS blocked")) {
     return res.status(403).json({ error: err.message });
   }
-
   res.status(err.status || 500).json({
     error: isProd ? "Internal server error" : err.message,
   });

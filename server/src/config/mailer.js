@@ -6,7 +6,7 @@ if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
   transporter = nodemailer.createTransport({
     host: "smtp-relay.brevo.com",
     port: 587,
-    secure: false,
+    secure: true,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
@@ -17,4 +17,4 @@ if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
   console.log("Email not configured - set EMAIL_USER and EMAIL_PASS in .env");
 }
 
-module.exports = transporter;
+module.exports = null; // SMTP not used — using Brevo HTTP API
