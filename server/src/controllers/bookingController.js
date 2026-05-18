@@ -1,5 +1,4 @@
 ﻿const pool = require("../config/db");
-const { sendBookingReceived, sendAdminNewBooking, sendBookingConfirmed } = require("../services/emailService");
 const { sendWhatsAppToAdmin, sendWhatsAppToCustomer } = require("../services/whatsappService");
 
 // ── Reference generator ───────────────────────────────────────────────────
@@ -78,8 +77,6 @@ const createBooking = async (req, res) => {
     });
 
     // ── Fire notifications in background after response ───────────────────
-    safeSend(sendBookingReceived,    booking); // email → customer
-    safeSend(sendAdminNewBooking,    booking); // email → admin
     safeSend(sendWhatsAppToAdmin,    booking); // WhatsApp → admin
     safeSend(sendWhatsAppToCustomer, booking); // WhatsApp → customer
 
@@ -127,7 +124,6 @@ const updateBookingStatus = async (req, res) => {
 
     // ── Fire confirmation notifications in background ─────────────────────
     if (status === "confirmed") {
-      safeSend(sendBookingConfirmed,   booking); // email → customer
       safeSend(sendWhatsAppToCustomer, booking); // WhatsApp → customer
     }
 

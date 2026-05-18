@@ -1,9 +1,8 @@
-const pool   = require("../config/db");
+﻿const pool   = require("../config/db");
 const bcrypt = require("bcryptjs");
 const jwt    = require("jsonwebtoken");
-const { sendAdminLoginAlert } = require("../services/emailService");
 
-// ── Cookie config ─────────────────────────────────────────────────────────
+// â”€â”€ Cookie config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const COOKIE_NAME = "adminToken";
 const COOKIE_OPTS = {
   httpOnly: true,
@@ -15,7 +14,7 @@ const COOKIE_OPTS = {
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET) {
-  console.error("❌ FATAL: JWT_SECRET is not set in .env");
+  console.error("âŒ FATAL: JWT_SECRET is not set in .env");
   process.exit(1);
 }
 
@@ -23,7 +22,7 @@ const getIP = (req) =>
   (req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "unknown")
     .split(",")[0].trim();
 
-// ── adminLogin ────────────────────────────────────────────────────────────
+// â”€â”€ adminLogin â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const adminLogin = async (req, res) => {
   const { username, password } = req.body;
   const ip = getIP(req);
@@ -61,23 +60,22 @@ const adminLogin = async (req, res) => {
     );
 
     res.cookie(COOKIE_NAME, token, COOKIE_OPTS);
-    sendAdminLoginAlert(username, ip).catch(() => {});
 
     return res.json({ username: admin.username, token });
 
   } catch (err) {
-    console.error("❌ adminLogin error:", err.message);
+    console.error("âŒ adminLogin error:", err.message);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
 
-// ── adminLogout ───────────────────────────────────────────────────────────
+// â”€â”€ adminLogout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const adminLogout = (_req, res) => {
   res.clearCookie(COOKIE_NAME, { ...COOKIE_OPTS, maxAge: 0 });
   return res.json({ message: "Logged out" });
 };
 
-// ── getStats ──────────────────────────────────────────────────────────────
+// â”€â”€ getStats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const getStats = async (_req, res) => {
   try {
     const [total, pending, confirmed, cancelled, activeTrips, activePlaces, recent] =
@@ -101,12 +99,12 @@ const getStats = async (_req, res) => {
       recent_bookings:   recent.rows,
     });
   } catch (err) {
-    console.error("❌ getStats error:", err.message);
+    console.error("âŒ getStats error:", err.message);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
 
-// ── getLoginLogs ──────────────────────────────────────────────────────────
+// â”€â”€ getLoginLogs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const getLoginLogs = async (_req, res) => {
   try {
     const result = await pool.query(`
@@ -118,12 +116,12 @@ const getLoginLogs = async (_req, res) => {
     `);
     return res.json(result.rows);
   } catch (err) {
-    console.error("❌ getLoginLogs error:", err.message);
+    console.error("âŒ getLoginLogs error:", err.message);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
 
-// ── Places CRUD ───────────────────────────────────────────────────────────
+// â”€â”€ Places CRUD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const getAllPlaces = async (_req, res) => {
   try {
@@ -132,7 +130,7 @@ const getAllPlaces = async (_req, res) => {
     );
     return res.json(result.rows);
   } catch (err) {
-    console.error("❌ getAllPlaces error:", err.message);
+    console.error("âŒ getAllPlaces error:", err.message);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -144,7 +142,7 @@ const getPublicPlaces = async (_req, res) => {
     );
     return res.json(result.rows);
   } catch (err) {
-    console.error("❌ getPublicPlaces error:", err.message);
+    console.error("âŒ getPublicPlaces error:", err.message);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -167,7 +165,7 @@ const createPlace = async (req, res) => {
     );
     return res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error("❌ createPlace error:", err.message);
+    console.error("âŒ createPlace error:", err.message);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -195,7 +193,7 @@ const updatePlace = async (req, res) => {
     if (!result.rows.length) return res.status(404).json({ error: "Place not found" });
     return res.json(result.rows[0]);
   } catch (err) {
-    console.error("❌ updatePlace error:", err.message);
+    console.error("âŒ updatePlace error:", err.message);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -210,7 +208,7 @@ const togglePlaceActive = async (req, res) => {
     if (!result.rows.length) return res.status(404).json({ error: "Place not found" });
     return res.json(result.rows[0]);
   } catch (err) {
-    console.error("❌ togglePlaceActive error:", err.message);
+    console.error("âŒ togglePlaceActive error:", err.message);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -224,7 +222,7 @@ const deletePlace = async (req, res) => {
     if (!result.rows.length) return res.status(404).json({ error: "Place not found" });
     return res.json({ message: "Place deleted" });
   } catch (err) {
-    console.error("❌ deletePlace error:", err.message);
+    console.error("âŒ deletePlace error:", err.message);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
