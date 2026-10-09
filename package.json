@@ -4,9 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "dev": "vite client",
+    "build": "vite build client --outDir ../dist --emptyOutDir",
+    "preview": "vite preview client --outDir ../dist"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.28.0",
