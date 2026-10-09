@@ -59,6 +59,7 @@ export default function Hero({ onExplore }) {
           >
             <span className={s.tag}>{slide.tag}</span>
             <h1 className={s.heading}>{slide.h}</h1>
+            <p className={s.sub}>Now on GitHub</p>
             <p className={s.sub}>{slide.p}</p>
           </motion.div>
         </AnimatePresence>

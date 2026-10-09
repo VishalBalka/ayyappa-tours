@@ -5,6 +5,7 @@ export default defineConfig({
   plugins: [react()],
 
   server: {
+    allowedHosts: true,
     // Dev proxy — rewrites /api calls to your local backend
     // In production this is NOT used; VITE_API_URL env var is used instead
     proxy: {
