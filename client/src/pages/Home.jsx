@@ -152,25 +152,28 @@ function BookingForm() {
     form.travel_date !== "" &&
     Number(form.persons) >= 1;
 
-  const submit = async () => {
+  const submit = () => {
     if (!isValid) return;
-    setBusy(true); setErr("");
+    setErr("");
     try {
-      const data = await api.createBooking({
-        customer_name:    clean(form.customer_name),
-        customer_email:   clean(form.customer_email),
-        customer_phone:   clean(form.customer_phone),
-        place:            clean(form.place),
-        travel_date:      form.travel_date,
-        persons:          Number(form.persons),
-        special_requests: clean(form.special_requests) || null,
-      });
-      setDone(data.booking?.reference || data.reference || "AYT-SUCCESS");
+      const reference = `AYT-${Math.floor(100000 + Math.random() * 900000)}`;
+      const message = [
+        "New Booking Request",
+        `Reference: ${reference}`,
+        `Name: ${form.customer_name.trim()}`,
+        `Phone: ${form.customer_phone.trim()}`,
+        `Email: ${form.customer_email.trim()}`,
+        `Destination: ${form.place.trim() || "Not specified"}`,
+        `Number of Persons: ${Number(form.persons)}`,
+        `Travel Date: ${form.travel_date}`,
+        `Special Requests: ${form.special_requests.trim() || "None"}`,
+      ].join("\n");
+      const url = `https://wa.me/919573680120?text=${encodeURIComponent(message)}`;
+      window.open(url, "_blank", "noopener");
+      setDone(reference);
       setForm(INIT);
     } catch (e) {
-      setErr(e.response?.data?.error || "Something went wrong. Please try again.");
-    } finally {
-      setBusy(false);
+      setErr("Something went wrong. Please try again.");
     }
   };
 
@@ -182,12 +185,12 @@ function BookingForm() {
           transition={{ type: "spring", damping: 14 }}
         >✓</motion.div>
         <h3>Booking Received!</h3>
-        <p>We'll contact you within 24 hours to confirm your journey.</p>
+        <p>Your booking request has opened in WhatsApp. Please press send there to complete your request.</p>
         <div className={s.refBox}>
           <span>Reference Number</span>
           <strong>{done}</strong>
         </div>
-        <p className={s.emailNote}>📧 Confirmation sent to your email &amp; WhatsApp</p>
+        <p className={s.emailNote}>💬 Not seeing WhatsApp? Check that pop-ups are allowed, then press send in the chat.</p>
         <button className={s.resetBtn} onClick={() => setDone(null)}>
           Make Another Booking
         </button>
