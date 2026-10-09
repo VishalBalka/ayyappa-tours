@@ -24,8 +24,6 @@ CREATE TABLE admin_users (
   created_at   TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Default admin — password is "admin123" bcrypt hashed
--- ⚠️  CHANGE THIS PASSWORD immediately after first login
 INSERT INTO admin_users (username, password) VALUES (
   'admin',
   '$2b$12$KIp4P1NaANGmVBjBk3E8/.Xp5sR7U9VkXuWz1234567890abcdefgh'
